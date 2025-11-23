@@ -30,15 +30,29 @@ window.updateTitle = function (info) {
     document.getElementById("title").innerText = `Semana ${start} - ${end}`;
 };
 
-/* Botões */
-document.getElementById("prevBtn").onclick = () => calendar.prev();
-document.getElementById("nextBtn").onclick = () => calendar.next();
-document.getElementById("todayBtn").onclick = () => calendar.today();
+    /* =========================================================================
+       6. BOTÕES DE NAVEGAÇÃO
+    ========================================================================= */
+    document.getElementById("prevBtn").onclick = () => calendar.prev();
+    document.getElementById("nextBtn").onclick = () => calendar.next();
+    document.getElementById("todayBtn").onclick = () => calendar.today();
 
-document.getElementById("weekBtn").onclick = () => {
-    calendar.changeView("timeGridWeek");
-};
+    document.getElementById("weekBtn").onclick = () => {
+        calendar.changeView("timeGridWeek");
+        setActive("timeGridWeek");
+    };
+    document.getElementById("monthBtn").onclick = () => {
+        calendar.changeView("dayGridMonth");
+        setActive("dayGridMonth");
+    };
 
-document.getElementById("monthBtn").onclick = () => {
-    calendar.changeView("dayGridMonth");
-};
+    function setActive(view) {
+        const buttons = { dayGridMonth: "monthBtn", timeGridWeek: "weekBtn" };
+        for (let key in buttons) {
+            const btn = document.getElementById(buttons[key]);
+            btn.classList.toggle("bg-blue-600", key === view);
+            btn.classList.toggle("text-white", key === view);
+            btn.classList.toggle("bg-gray-100", key !== view);
+            btn.classList.toggle("text-gray-600", key !== view);
+        }
+    }
