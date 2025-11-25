@@ -29,8 +29,8 @@ Route::middleware([
     Route::post('/consultas', [ConsultaController::class, 'store'])->name('consultas.store');
     Route::put('/consultas/{id}', [ConsultaController::class, 'update'])->name('consultas.update');
     Route::delete('/consultas/{id}', [ConsultaController::class, 'destroy'])->name('consultas.destroy');
-    
-    
+
+
     // Lista todos os pacientes (GET)
     Route::get('/pacientes', [PacienteController::class, 'index'])->name('pacientes.index');
     // Busca paciente específico para edição (GET JSON)
@@ -58,4 +58,9 @@ Route::middleware([
 
     Route::delete('/evolucoes/{evolucao}', [EvolucaoController::class, 'destroy'])
         ->name('evolucoes.destroy');
+    
+    
+        Route::get('/consultas/{consulta}/iniciar-atendimento', [ConsultaController::class, 'iniciarAtendimento'])
+        ->name('consultas.iniciar-atendimento')
+        ->middleware('auth'); // se já tiver
 });

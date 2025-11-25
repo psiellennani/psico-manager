@@ -37,4 +37,8 @@ class Consulta extends Model
     {
         return $this->hasMany(Evolucao::class);
     }
+    public function evolucao()
+    {
+        return $this->hasOne(Evolucao::class, 'consulta_id');
+    }
 }

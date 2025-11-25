@@ -79,6 +79,16 @@
                     Salvar Alterações
                 </button>
             </div>
+             <div class="flex justify-between items-center pt-5 border-t mt-6">
+            <button type="button" id="btnIniciarAtendimento"
+                class="hidden flex-1 center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white transition text-center ml-4 flex items-center justify-center gap-2 text-lg">
+                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M14 10l-2 1m0 0l-2-1m2 1v2.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Iniciar Atendimento
+            </button>
+            </div>
 
         </form>
     </div>

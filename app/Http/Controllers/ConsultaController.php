@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Consulta;
+use App\Models\Evolucao;
 use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -160,5 +161,40 @@ class ConsultaController extends Controller
                 'status'      => $consulta->status,
             ],
         ];
+    }
+
+    public function iniciarAtendimento(Consulta $consulta)
+    {
+        // Validações básicas
+        if (!$consulta->paciente_id) {
+            return redirect()->back()->with('error', 'Agendamento sem paciente vinculado.');
+        }
+
+        if (!in_array($consulta->status, ['agendado', 'confirmado'])) {
+            return redirect()->back()->with('warning', 'Esta consulta já foi atendida ou cancelada.');
+        }
+
+        // Verifica se já existe evolução vinculada a essa consulta
+        $evolucao = $consulta->evolucao()->first();
+
+        if (!$evolucao) {
+            $evolucao = Evolucao::create([
+                'paciente_id'      => $consulta->paciente_id,
+                'consulta_id'      => $consulta->id,
+                'profissional_id'  => Auth::id(), // profissional logado
+                'tipo'             => 'evolucao', // padrão
+                'conteudo'         => "Sessão iniciada em " . now()->format('d/m/Y \à\s H:i') . "\n\n", // texto inicial
+                'data_registro'    => now(),
+            ]);
+        }
+
+        // Atualiza o status da consulta para "atendido"
+        $consulta->update([
+            'status' => 'atendido'
+        ]);
+
+        // Redireciona para editar a evolução
+        return redirect()->route('evolucoes.edit', $evolucao->id)
+                        ->with('success', 'Atendimento iniciado com sucesso!');
     }
 }

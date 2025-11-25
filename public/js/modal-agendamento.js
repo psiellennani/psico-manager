@@ -39,36 +39,68 @@ window.openModalAgendamento = function (info) {
     // Botão salvar = CREATE
     document.getElementById("btnSalvarAgendamento").onclick = salvarAgendamento;
 };
-
-// ABRE modal (EDIÇÃO de agendamento)
+//abre modal edicao com opcao de iniciar atendimento
 window.openModalEdicao = function (info) {
     showModal();
-    resetarModal(); // ← LIMPEZA TOTAL antes de preencher
+    resetarModal();
 
     const event = info.event;
-    const id = String(event.id); // garante string (já está funcionando)
+    const id = String(event.id);
 
     document.getElementById("modalTitle").innerText = "Editar Agendamento";
 
-    // Preenche com os dados do evento clicado
+    // Preenche campos
     document.getElementById("paciente_id").value = event.extendedProps.paciente_id || "";
-    document.getElementById("titulo").value       = event.extendedProps.titulo || "";
+    document.getElementById("titulo").value       = event.title || "";
     document.getElementById("status").value       = event.extendedProps.status || "agendado";
+    document.getElementById("observacoes").value  = event.extendedProps.observacoes || "";
 
     document.getElementById("modalDate").value   = moment(event.start).format("YYYY-MM-DD");
     document.getElementById("modalStart").value = moment(event.start).format("HH:mm");
-    document.getElementById("modalEnd").value   = event.end
+    document.getElementById("modalEnd").value   = event.end 
         ? moment(event.end).format("HH:mm")
-        : moment(event.start).add(30, "minutes").format("HH:mm");
+        : moment(event.start).add(50, "minutes").format("HH:mm");
 
-    // Botão salvar = UPDATE
+    // Botões padrão
     document.getElementById("btnSalvarAgendamento").onclick = () => updateAgendamento(id);
 
-    // Botão excluir
     const btnExcluir = document.getElementById("btnExcluirAgendamento");
     btnExcluir.classList.remove("hidden");
     btnExcluir.onclick = () => excluirAgendamento(id);
+
+    // BOTÃO INICIAR ATENDIMENTO - Lógica inteligente
+    const btnIniciar = document.getElementById("btnIniciarAtendimento");
+    const agora = moment();
+    const inicio = moment(event.start);
+    const status = event.extendedProps.status;
+    const temPaciente = !!event.extendedProps.paciente_id;
+
+    // Mostra botão se:
+    // - for hoje
+    // - horário já chegou ou está próximo (±30 min)
+    // - status for agendado ou confirmado
+    // - tiver paciente selecionado
+    const podeIniciar = 
+        inicio.isSame(agora, 'day') &&
+        agora.isSameOrAfter(inicio.clone().subtract(30, 'minutes')) &&
+        ['agendado', 'confirmado'].includes(status) &&
+        temPaciente;
+
+    if (podeIniciar) {
+        btnIniciar.classList.remove("hidden");
+        btnIniciar.onclick = () => iniciarAtendimento(id);
+    } else {
+        btnIniciar.classList.add("hidden");
+    }
 };
+
+
+window.iniciarAtendimento = function(consultaId) {
+    if (confirm("Iniciar atendimento agora?\n\nVocê será levado à evolução da sessão.")) {
+        window.location.href = `/consultas/${consultaId}/iniciar-atendimento`;
+    }
+};
+
 
 // EXCLUIR agendamento
 window.excluirAgendamento = function (id) {
