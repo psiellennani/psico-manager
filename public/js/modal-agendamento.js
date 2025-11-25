@@ -6,19 +6,19 @@ const modalCard = document.getElementById("modalCard");
 // FUNÇÃO DE LIMPEZA TOTAL (chamada SEMPRE ao abrir o modal)
 function resetarModal() {
     const form = document.getElementById("formAgendamento");
-    if (form) form.reset(); // limpa todos os campos do <form>
+    if (form) form.reset();
 
-    // Limpa campos que às vezes não são resetados automaticamente
+    // Limpa campos manuais
     document.getElementById("paciente_id").value = "";
     document.getElementById("titulo").value = "";
-    document.getElementById("status").value = "agendado"; // padrão
+    document.getElementById("status").value = "agendado";
     document.getElementById("modalDate").value = "";
     document.getElementById("modalStart").value = "";
     document.getElementById("modalEnd").value = "";
 
     // Botões
     document.getElementById("btnExcluirAgendamento").classList.add("hidden");
-    document.getElementById("btnSalvarAgendamento").onclick = null; // remove onclick antigo
+    document.getElementById("btnSalvarAgendamento").onclick = null;
     document.getElementById("btnExcluirAgendamento").onclick = null;
 }
 
@@ -36,11 +36,11 @@ window.openModalAgendamento = function (info) {
     document.getElementById("modalStart").value = start.format("HH:mm");
     document.getElementById("modalEnd").value = end.format("HH:mm");
 
-    // Botão salvar = CREATE
     document.getElementById("btnSalvarAgendamento").onclick = salvarAgendamento;
 };
-//abre modal edicao com opcao de iniciar atendimento
-window.openModalEdicao = function (info) {
+
+// ABRE modal (EDIÇÃO + INICIAR ATENDIMENTO)
+window.openModalEdicao = function(info) {
     showModal();
     resetarModal();
 
@@ -51,56 +51,53 @@ window.openModalEdicao = function (info) {
 
     // Preenche campos
     document.getElementById("paciente_id").value = event.extendedProps.paciente_id || "";
-    document.getElementById("titulo").value       = event.title || "";
-    document.getElementById("status").value       = event.extendedProps.status || "agendado";
-    document.getElementById("observacoes").value  = event.extendedProps.observacoes || "";
+    document.getElementById("titulo").value = event.title || "";
+    document.getElementById("status").value = event.extendedProps.status || "agendado";
+    document.getElementById("observacoes").value = event.extendedProps.observacoes || "";
 
-    document.getElementById("modalDate").value   = moment(event.start).format("YYYY-MM-DD");
-    document.getElementById("modalStart").value = moment(event.start).format("HH:mm");
-    document.getElementById("modalEnd").value   = event.end 
-        ? moment(event.end).format("HH:mm")
-        : moment(event.start).add(50, "minutes").format("HH:mm");
+    const inicio = moment.parseZone(event.start).local();
+    const fim = event.end ? moment.parseZone(event.end).local() : inicio.clone().add(50, "minutes");
 
-    // Botões padrão
+    document.getElementById("modalDate").value = inicio.format("YYYY-MM-DD");
+    document.getElementById("modalStart").value = inicio.format("HH:mm");
+    document.getElementById("modalEnd").value = fim.format("HH:mm");
+
+    // Botão salvar
     document.getElementById("btnSalvarAgendamento").onclick = () => updateAgendamento(id);
 
+    // Botão excluir
     const btnExcluir = document.getElementById("btnExcluirAgendamento");
     btnExcluir.classList.remove("hidden");
     btnExcluir.onclick = () => excluirAgendamento(id);
 
-    // BOTÃO INICIAR ATENDIMENTO - Lógica inteligente
+    // ------------------- BOTÃO INICIAR ATENDIMENTO -------------------
     const btnIniciar = document.getElementById("btnIniciarAtendimento");
+    const hoje = moment().startOf("day");
+    const diaConsulta = inicio.clone().startOf("day");
     const agora = moment();
-    const inicio = moment(event.start);
     const status = event.extendedProps.status;
     const temPaciente = !!event.extendedProps.paciente_id;
 
-    // Mostra botão se:
-    // - for hoje
-    // - horário já chegou ou está próximo (±30 min)
-    // - status for agendado ou confirmado
-    // - tiver paciente selecionado
-    const podeIniciar = 
-        inicio.isSame(agora, 'day') &&
-        agora.isSameOrAfter(inicio.clone().subtract(30, 'minutes')) &&
-        ['agendado', 'confirmado'].includes(status) &&
-        temPaciente;
-
-    if (podeIniciar) {
+    // Oculta botão para dias anteriores
+    if (diaConsulta.isBefore(hoje) || !["agendado", "confirmado"].includes(status) || !temPaciente) {
+        btnIniciar.classList.add("hidden");
+    } else {
         btnIniciar.classList.remove("hidden");
         btnIniciar.onclick = () => iniciarAtendimento(id);
-    } else {
-        btnIniciar.classList.add("hidden");
     }
 };
 
 
-window.iniciarAtendimento = function(consultaId) {
-    if (confirm("Iniciar atendimento agora?\n\nVocê será levado à evolução da sessão.")) {
+// AÇÃO - INICIAR ATENDIMENTO
+window.iniciarAtendimento = function (consultaId) {
+    if (
+        confirm(
+            "Iniciar atendimento agora?\n\nVocê será levado à evolução da sessão."
+        )
+    ) {
         window.location.href = `/consultas/${consultaId}/iniciar-atendimento`;
     }
 };
-
 
 // EXCLUIR agendamento
 window.excluirAgendamento = function (id) {
@@ -113,23 +110,24 @@ window.excluirAgendamento = function (id) {
     fetch(`/consultas/${id}`, {
         method: "DELETE",
         headers: {
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content,
-            "Accept": "application/json"
-        }
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')
+                .content,
+            Accept: "application/json",
+        },
     })
-    .then(r => {
-        if (!r.ok) throw new Error("Erro na exclusão");
-        return r.json();
-    })
-    .then(() => {
-        calendar.refetchEvents(); // garante sincronia
-        closeModal();
-    })
-    .catch(err => {
-        console.error(err);
-        alert("Erro ao excluir. Tente novamente.");
-        calendar.refetchEvents(); // recarrega caso tenha dado errado
-    });
+        .then((r) => {
+            if (!r.ok) throw new Error("Erro na exclusão");
+            return r.json();
+        })
+        .then(() => {
+            calendar.refetchEvents(); // garante sincronia
+            closeModal();
+        })
+        .catch((err) => {
+            console.error(err);
+            alert("Erro ao excluir. Tente novamente.");
+            calendar.refetchEvents(); // recarrega caso tenha dado errado
+        });
 };
 
 // MOSTRAR modal (com animação)
