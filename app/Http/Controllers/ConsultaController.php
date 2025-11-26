@@ -49,7 +49,7 @@ class ConsultaController extends Controller
 
             return [
                 'id'    => $c->id,
-                'title' => $c->paciente->nome . ' - ' . $c->titulo,
+                'title' => $c->paciente->nome, //. ' - ' . $c->titulo,
                 'start' => $c->data_hora_inicio->format('Y-m-d\TH:i:s'),
                 'end'   => $c->data_hora_fim->format('Y-m-d\TH:i:s'),
 
@@ -62,7 +62,8 @@ class ConsultaController extends Controller
                 'extendedProps' => [
                     'status' => $c->status,
                     'paciente_id' => $c->paciente_id,
-                    'titulo' => $c->titulo,
+                    'titulo'        => $c->titulo ?? '',
+                    'observacoes'  => $c->observacoes ?? '',
                 ],
             ];
         });

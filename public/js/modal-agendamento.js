@@ -51,10 +51,9 @@ window.openModalEdicao = function(info) {
 
     // Preenche campos
     document.getElementById("paciente_id").value = event.extendedProps.paciente_id || "";
-    document.getElementById("titulo").value = event.title || "";
+    document.getElementById("titulo").value = event.extendedProps.titulo ?? event.title?.split(" - ").at(-1)?.trim() ?? "";
     document.getElementById("status").value = event.extendedProps.status || "agendado";
-    document.getElementById("observacoes").value = event.extendedProps.observacoes || "";
-
+    document.getElementById("observacoes").value = event.extendedProps.observacoes ?? "";
     const inicio = moment.parseZone(event.start).local();
     const fim = event.end ? moment.parseZone(event.end).local() : inicio.clone().add(50, "minutes");
 
