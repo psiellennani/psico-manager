@@ -27,4 +27,14 @@ class Paciente extends Model
     {
         return $this->hasMany(Evolucao::class);
     }
+    
+    public function sessoes()
+    {
+        return $this->hasMany(Sessao::class);
+    }
+       public function registros()
+    {
+        return $this->hasMany(Registro::class);
+    }
+
 }

@@ -21,14 +21,21 @@
                 <td class="p-3">{{ $paciente->nome }}</td>
                 <td class="p-3">{{ $paciente->telefone }}</td>
                 <td class="p-3">{{ $paciente->email }}</td>
-                <td class="p-3 flex gap-2">
-                    <a href="javascript:void(0)" onclick="editPaciente({{ $paciente->id }})" class="text-blue-500 hover:underline">Editar</a>
-                    <form action="{{ route('pacientes.destroy', $paciente) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir?');">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-500 hover:underline">Excluir</button>
-                    </form>
-                </td>
+          <td class="p-3 flex gap-2">
+    <a href="javascript:void(0)" onclick="editPaciente({{ $paciente->id }})" class="text-blue-500 hover:underline">Editar</a>
+
+    <form action="{{ route('pacientes.destroy', $paciente) }}" method="POST" onsubmit="return confirm('Deseja realmente excluir?');">
+        @csrf
+        @method('DELETE')
+        <button type="submit" class="text-red-500 hover:underline">Excluir</button>
+    </form>
+
+    <!-- Botão para acessar sessões -->
+    <a href="{{ route('prontuario.index', $paciente->id) }}" 
+       class="text-green-500 hover:underline">
+       Ver Sessões
+    </a>
+</td>
             </tr>
             @endforeach
         </tbody>

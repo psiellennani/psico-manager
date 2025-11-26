@@ -4,13 +4,15 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\EvolucaoController;
+use App\Http\Controllers\SessaoController;
+use App\Http\Controllers\RegistroController;
 
 // Página inicial
 Route::get('/', function () {
     return view('welcome');
 });
 
-// Rotas protegidas
+// Rotas protegidas por autenticação
 Route::middleware([
     'auth:sanctum',
     config('jetstream.auth_session'),
@@ -22,45 +24,45 @@ Route::middleware([
         return view('dashboard');
     })->name('dashboard');
 
-    // Agenda
+    // Agenda de consultas
     Route::get('/agenda', [ConsultaController::class, 'index'])->name('agenda.index');
     Route::get('/api/consultas', [ConsultaController::class, 'apiEvents'])->name('consultas.api');
-
     Route::post('/consultas', [ConsultaController::class, 'store'])->name('consultas.store');
     Route::put('/consultas/{id}', [ConsultaController::class, 'update'])->name('consultas.update');
     Route::delete('/consultas/{id}', [ConsultaController::class, 'destroy'])->name('consultas.destroy');
 
+    // Rotas de pacientes
+    Route::prefix('pacientes')->group(function () {
+        Route::get('/', [PacienteController::class, 'index'])->name('pacientes.index');
+        Route::get('/{paciente}', [PacienteController::class, 'show'])->name('pacientes.show');
+        Route::post('/', [PacienteController::class, 'store'])->name('pacientes.store');
+        Route::put('/{paciente}', [PacienteController::class, 'update'])->name('pacientes.update');
+        Route::delete('/{paciente}', [PacienteController::class, 'destroy'])->name('pacientes.destroy');
 
-    // Lista todos os pacientes (GET)
-    Route::get('/pacientes', [PacienteController::class, 'index'])->name('pacientes.index');
-    // Busca paciente específico para edição (GET JSON)
-    Route::get('/pacientes/{paciente}', [PacienteController::class, 'show'])->name('pacientes.show');
-    // Criação de paciente (POST)
-    Route::post('/pacientes', [PacienteController::class, 'store'])->name('pacientes.store');
-    // Atualização de paciente (PUT)
-    Route::put('/pacientes/{paciente}', [PacienteController::class, 'update'])->name('pacientes.update');
-    // Exclusão de paciente (DELETE)
-    Route::delete('/pacientes/{paciente}', [PacienteController::class, 'destroy'])->name('pacientes.destroy');
+        // Sessões dentro de paciente
+        Route::get('{paciente}/sessoes', [SessaoController::class, 'index'])->name('prontuario.index');
+        Route::post('{paciente}/sessoes', [SessaoController::class, 'store'])->name('sessoes.store');
+
+        // Registros dentro de paciente
+        Route::post('{paciente}/registros', [RegistroController::class, 'store'])->name('registros.store');
+            // web.php → dentro do group auth
+    Route::get('{paciente}/sessoes/create', [SessaoController::class, 'create'])
+        ->name('sessoes.create');
+    });
+
+    // Sessões individuais (edit/update/delete)
+    Route::get('sessoes/{sessao}/edit', [SessaoController::class, 'edit'])->name('sessoes.edit');
+    Route::put('sessoes/{sessao}', [SessaoController::class, 'update'])->name('sessoes.update');
+    Route::delete('sessoes/{sessao}', [SessaoController::class, 'destroy'])->name('sessoes.destroy');
+
+    // Registros individuais (edit/update/delete)
+    Route::get('registros/{registro}/edit', [RegistroController::class, 'edit'])->name('registros.edit');
+    Route::put('registros/{registro}', [RegistroController::class, 'update'])->name('registros.update');
+    Route::delete('registros/{registro}', [RegistroController::class, 'destroy'])->name('registros.destroy');
+
+    // Iniciar atendimento
+    Route::get('/consultas/{consulta}/iniciar-atendimento', [ConsultaController::class, 'iniciarAtendimento'])
+        ->name('consultas.iniciar-atendimento');
 
 
-
-    // Evoluções do paciente
-    Route::get('/pacientes/{paciente}/evolucoes', [EvolucaoController::class, 'index'])->name('evolucoes.index');
-
-    Route::post('/pacientes/{paciente}/evolucoes', [EvolucaoController::class, 'store'])
-        ->name('evolucoes.store');
-
-    Route::get('/evolucoes/{evolucao}/editar', [EvolucaoController::class, 'edit'])
-        ->name('evolucoes.edit');
-
-    Route::put('/evolucoes/{evolucao}', [EvolucaoController::class, 'update'])
-        ->name('evolucoes.update');
-
-    Route::delete('/evolucoes/{evolucao}', [EvolucaoController::class, 'destroy'])
-        ->name('evolucoes.destroy');
-    
-    
-        Route::get('/consultas/{consulta}/iniciar-atendimento', [ConsultaController::class, 'iniciarAtendimento'])
-        ->name('consultas.iniciar-atendimento')
-        ->middleware('auth'); // se já tiver
 });

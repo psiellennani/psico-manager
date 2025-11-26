@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Consulta;
 use App\Models\Evolucao;
 use App\Models\Paciente;
+use App\Models\Sessao;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -40,7 +41,7 @@ class ConsultaController extends Controller
             'faltou'      => ['bg' => '#fcd34d', 'border' => '#f59e0b', 'text' => '#713f12'], // Amarelo
             'desmarcado'  => ['bg' => '#fecaca', 'border' => '#f87171', 'text' => '#7f1d1d'], // Vermelho
         ];
-        
+
         $events = $consultas->map(function ($c) use ($cores) {
 
             // Seleciona a cor do status ou a cor padrão caso não exista
@@ -162,39 +163,17 @@ class ConsultaController extends Controller
             ],
         ];
     }
+// app/Http/Controllers/ConsultaController.php (ou onde estiver)
 
-    public function iniciarAtendimento(Consulta $consulta)
-    {
-        // Validações básicas
-        if (!$consulta->paciente_id) {
-            return redirect()->back()->with('error', 'Agendamento sem paciente vinculado.');
-        }
-
-        if (!in_array($consulta->status, ['agendado', 'confirmado'])) {
-            return redirect()->back()->with('warning', 'Esta consulta já foi atendida ou cancelada.');
-        }
-
-        // Verifica se já existe evolução vinculada a essa consulta
-        $evolucao = $consulta->evolucao()->first();
-
-        if (!$evolucao) {
-            $evolucao = Evolucao::create([
-                'paciente_id'      => $consulta->paciente_id,
-                'consulta_id'      => $consulta->id,
-                'profissional_id'  => Auth::id(), // profissional logado
-                'tipo'             => 'evolucao', // padrão
-                'conteudo'         => "Sessão iniciada em " . now()->format('d/m/Y \à\s H:i') . "\n\n", // texto inicial
-                'data_registro'    => now(),
-            ]);
-        }
-
-        // Atualiza o status da consulta para "atendido"
-        $consulta->update([
-            'status' => 'atendido'
-        ]);
-
-        // Redireciona para editar a evolução
-        return redirect()->route('evolucoes.edit', $evolucao->id)
-                        ->with('success', 'Atendimento iniciado com sucesso!');
+public function iniciarAtendimento(Consulta $consulta)
+{
+    if (!in_array($consulta->status, ['agendado', 'confirmado'])) {
+        return back()->with('warning', 'Consulta já atendida ou cancelada.');
     }
+
+    return redirect()
+        ->route('sessoes.create', $consulta->paciente)
+        ->with('consulta_id', $consulta->id)           // tem que ser exatamente isso
+        ->with('data_sessao', $consulta->data_hora_inicio->format('Y-m-d\TH:i'));
+}
 }

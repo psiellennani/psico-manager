@@ -41,4 +41,8 @@ class Consulta extends Model
     {
         return $this->hasOne(Evolucao::class, 'consulta_id');
     }
+       public function sessoes()
+    {
+        return $this->hasOne(Sessao::class, 'sessao_id');
+    }
 }
