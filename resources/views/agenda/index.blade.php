@@ -6,8 +6,7 @@
 @endpush
 @section('content')
 <div class="min-h-screen bg-gray-50">
-    <div class="max-w-7xl mx-auto p-4 sm:p-6">
-
+    <div class="w-full max-w-none p-4 sm:p-6">
         <!-- NAV E BOTÕES -->
         <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-4">
             <div class="flex flex-wrap items-center justify-between gap-4">

@@ -9,7 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
         initialView: "timeGridWeek",
         headerToolbar: false,
         height: "auto",
-        slotMinTime: "07:00",
+        slotMinTime: "08:00",
         slotMaxTime: "20:00",
         slotDuration: "00:30:00",
         selectable: true,
@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", function () {
         snapDuration: "00:15:00", // Ajusta o arraste e redimensionamento a cada 15 minutos
         eventConstraint: {
             // Restringe movimento aos limites da agenda
-            startTime: "07:00",
+            startTime: "08:00",
             endTime: "20:00",
         },
 
