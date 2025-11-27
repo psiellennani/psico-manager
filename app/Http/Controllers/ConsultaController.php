@@ -165,16 +165,21 @@ class ConsultaController extends Controller
         ];
     }
 // app/Http/Controllers/ConsultaController.php (ou onde estiver)
-
 public function iniciarAtendimento(Consulta $consulta)
 {
     if (!in_array($consulta->status, ['agendado', 'confirmado'])) {
-        return back()->with('warning', 'Consulta já atendida ou cancelada.');
+        return back()->with('warning', 'Esta consulta não pode mais ser iniciada.');
     }
 
+    // Correção: use o nome correto do campo da data
+    $dataSessao = $consulta->data_hora_inicio 
+        ? $consulta->data_hora_inicio->format('Y-m-d\TH:i')
+        : now()->format('Y-m-d\TH:i');
+
     return redirect()
-        ->route('sessoes.create', $consulta->paciente)
-        ->with('consulta_id', $consulta->id)           // tem que ser exatamente isso
-        ->with('data_sessao', $consulta->data_hora_inicio->format('Y-m-d\TH:i'));
+        ->route('prontuario.index', $consulta->paciente)
+        ->with('consulta_id', $consulta->id)
+        ->with('data_sessao', $dataSessao)           // ← agora seguro
+        ->with('abrir_modal_sessao', true);
 }
 }

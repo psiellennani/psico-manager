@@ -29,30 +29,34 @@ class SessaoController extends Controller
     }
 
 
-    public function store(Request $request, Paciente $paciente)
-    {
-        $request->validate([
-            'data_sessao' => 'required|date',
-            'conteudo'    => 'required|string|min:20',
-        ]);
+ public function store(Request $request, Paciente $paciente)
+{
+    $request->validate([
+        'data_sessao' => 'required|date',
+        'conteudo'    => 'required|string|min:20',
+    ]);
 
-        // Cria a sessão (já com consulta_id se veio de uma consulta)
-        $paciente->sessoes()->create([
-            'profissional_id' => auth()->id(),
-            'data_sessao'     => $request->data_sessao,
-            'conteudo'        => $request->conteudo,
-            'consulta_id'     => $request->consulta_id ?? null,
-        ]);
+    $sessao = $paciente->sessoes()->create([
+        'profissional_id' => auth()->id(),
+        'data_sessao'     => $request->data_sessao,
+        'conteudo'        => $request->conteudo,
+        'consulta_id'     => $request->consulta_id ?? null,
+    ]);
 
-        // A LINHA MÁGICA — só isso já resolve tudo
-        if ($request->filled('consulta_id')) {
-            Consulta::where('id', $request->consulta_id)->update(['status' => 'atendido']);
-        }
+    $mensagem = 'Sessão registrada com sucesso!';
 
-        return redirect()
-            ->route('prontuario.index', $paciente)
-            ->with('success', 'Sessão registrada com sucesso! Consulta marcada como atendida.');
+    // Só atualiza o status e adiciona parte da mensagem se tiver consulta vinculada
+    if ($request->filled('consulta_id')) {
+        Consulta::where('id', $request->consulta_id)
+                ->update(['status' => 'atendido']);
+
+        $mensagem .= ' Consulta marcada como atendida.';
     }
+
+    return redirect()
+        ->route('prontuario.index', $paciente)
+        ->with('success', $mensagem);
+}
 
     public function edit(Sessao $sessao)
     {
