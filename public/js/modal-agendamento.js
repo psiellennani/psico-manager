@@ -7,7 +7,17 @@ const modalCard = document.getElementById("modalCard");
 function resetarModal() {
     const form = document.getElementById("formAgendamento");
     if (form) form.reset();
-
+// Esconde todos os botões de ação específicos
+    const botoesEspecificos = [
+        "btnExcluirAgendamento",
+        "btnIniciarAtendimento",
+        "btnVisualizarAtendimento",
+        "btnVerTodasSessoes"
+    ];
+    botoesEspecificos.forEach(id => {
+        const btn = document.getElementById(id);
+        if (btn) btn.classList.add("hidden");
+    });
     // Limpa campos manuais
     document.getElementById("paciente_id").value = "";
     document.getElementById("titulo").value = "";
@@ -24,24 +34,6 @@ function resetarModal() {
     document.getElementById("btnExcluirAgendamento").onclick = null;
     document.getElementById("btnIniciarAtendimento").onclick = null;
 }
-
-// ------------------- FUNÇÃO AUXILIAR PARA CONFIGURAR STATUS -------------------
-function configurarStatus(selectStatus, statusAtual) {
-    // Desabilita se o status for 'atendido'
-    if (statusAtual === "atendido") {
-        selectStatus.disabled = true;
-    } else {
-        selectStatus.disabled = false;
-    }
-
-    // Remove manualmente a opção 'atendido' se for um novo agendamento
-    // Isso garante que o usuário não consiga marcar manualmente
-    const optionAtendido = selectStatus.querySelector("option[value='atendido']");
-    if (optionAtendido && statusAtual !== "atendido") {
-        optionAtendido.disabled = true;
-    }
-}
-
 // ------------------- FUNÇÃO AUXILIAR PARA CONFIGURAR STATUS -------------------
 /**
  * Ajusta o campo de status do agendamento.
@@ -51,15 +43,22 @@ function configurarStatus(selectStatus, statusAtual) {
  * @param {string} statusAtual - Status atual do agendamento
  */
 function configurarStatus(selectStatus, statusAtual) {
-    // Desabilita o select se já estiver "atendido"
-    selectStatus.disabled = statusAtual === "atendido";
+    // Se já estiver atendido OU faltou → trava o select
+    selectStatus.disabled = ["atendido", "faltou"].includes(statusAtual);
 
-    // Desabilita a opção "atendido" se for novo agendamento
+    // Desabilita opção "atendido" em novos agendamentos
     const optionAtendido = selectStatus.querySelector("option[value='atendido']");
     if (optionAtendido && statusAtual !== "atendido") {
         optionAtendido.disabled = true;
     }
+
+    // Desabilita opção "faltou" se já estiver faltou (evita mexer)
+    const optionFaltou = selectStatus.querySelector("option[value='faltou']");
+    if (optionFaltou && statusAtual === "faltou") {
+        optionFaltou.disabled = true;
+    }
 }
+
 
 // ------------------- ABRIR MODAL DE NOVO AGENDAMENTO -------------------
 /**
@@ -91,6 +90,7 @@ window.openModalAgendamento = function(info) {
 
     // Esconde o botão "Ver todas as sessões" para novos agendamentos
     document.getElementById("btnVerTodasSessoes").classList.add("hidden");
+    document.getElementById("btnIniciarAtendimento").classList.add("hidden");
 };
 
 // ------------------- ABRIR MODAL DE EDIÇÃO DE AGENDAMENTO -------------------
@@ -99,7 +99,9 @@ window.openModalAgendamento = function(info) {
  * Preenche todos os campos com os dados do evento selecionado.
  * @param {Object} info - Evento do calendário
  */
+// Função que abre o modal de edição de agendamento
 window.openModalEdicao = function(info) {
+    // Mostra o modal e limpa campos
     showModal();
     resetarModal();
 
@@ -108,7 +110,7 @@ window.openModalEdicao = function(info) {
 
     document.getElementById("modalTitle").innerText = "Editar Agendamento";
 
-    // Preenche campos com os dados do evento
+    // Preenche campos com dados do evento
     document.getElementById("paciente_id").value = event.extendedProps.paciente_id || "";
     document.getElementById("titulo").value = event.extendedProps.titulo ?? event.title?.split(" - ").at(-1)?.trim() ?? "";
     const status = event.extendedProps.status || "agendado";
@@ -116,57 +118,75 @@ window.openModalEdicao = function(info) {
     document.getElementById("observacoes").value = event.extendedProps.observacoes ?? "";
 
     const inicio = moment.parseZone(event.start).local();
-    const fim = event.end ? moment.parseZone(event.end).local() : inicio.clone().add(50, "minutes");
+    const fim = event.end
+        ? moment.parseZone(event.end).local()
+        : inicio.clone().add(50, "minutes");
 
-    // Preenche campos de data e hora
+    // Data e hora no modal
     document.getElementById("modalDate").value = inicio.format("YYYY-MM-DD");
     document.getElementById("modalStart").value = inicio.format("HH:mm");
     document.getElementById("modalEnd").value = fim.format("HH:mm");
 
-    // Aplica regras de status
+    // Aplica regras de exibição do status (função externa)
     configurarStatus(document.getElementById("status"), status);
 
-    // Botão Salvar -> atualiza agendamento
+    // Botão Salvar → chama função updateAgendamento()
     document.getElementById("btnSalvarAgendamento").onclick = () => updateAgendamento(id);
 
-    // Botão Excluir -> mostra e define ação
+    // Botão Excluir → mostra e conecta à função excluirAgendamento()
     const btnExcluir = document.getElementById("btnExcluirAgendamento");
     btnExcluir.classList.remove("hidden");
     btnExcluir.onclick = () => excluirAgendamento(id);
 
-    // Configura botão Iniciar Atendimento
+    // ------ Regras do botão "Iniciar Atendimento" ------
+    // ------ Regras do botão "Iniciar Atendimento" ------
     const btnIniciar = document.getElementById("btnIniciarAtendimento");
     const hoje = moment().startOf("day");
     const diaConsulta = inicio.clone().startOf("day");
     const temPaciente = !!event.extendedProps.paciente_id;
-    const consultaAtendida = status === "atendido";
+    const statusAtual = status;
 
-    // Oculta ou mostra botão de iniciar atendimento conforme regras
-    if (consultaAtendida || diaConsulta.isBefore(hoje) || !["agendado", "confirmado"].includes(status) || !temPaciente) {
-        btnIniciar.classList.add("hidden");
-    } else {
+    // Nova variável: verifica se já existe sessão registrada
+    const temSessaoRegistrada = !!event.extendedProps.sessao_id; // ajuste conforme seu backend
+
+    // Condição para MOSTRAR o botão "Iniciar Atendimento"
+    const podeIniciarAtendimento =
+        temPaciente &&
+        ["agendado", "confirmado", "faltou"].includes(statusAtual) &&
+        !temSessaoRegistrada &&                     // ← chave da mudança
+        !["atendido"].includes(statusAtual);        // "atendido" nunca permite iniciar
+
+    if (podeIniciarAtendimento) {
         btnIniciar.classList.remove("hidden");
         btnIniciar.onclick = () => iniciarAtendimento(id);
-    }
-
-    // Configura botão "Ver todas as sessões" apenas se houver paciente
-    const btnVerTodas = document.getElementById("btnVerTodasSessoes");
-    if (temPaciente) {
-        btnVerTodas.href = `/pacientes/${event.extendedProps.paciente_id}/sessoes`;
-        btnVerTodas.classList.remove("hidden");
     } else {
-        btnVerTodas.href = "#";
-        btnVerTodas.classList.add("hidden");
+        btnIniciar.classList.add("hidden");
     }
 
-    // Configura botão "Visualizar Atendimento" se já atendido
+        // ------ Botão "Ver todas as sessões" ------
+        const btnVerTodas = document.getElementById("btnVerTodasSessoes");
+        if (temPaciente) {
+            btnVerTodas.href = `/pacientes/${event.extendedProps.paciente_id}/sessoes`;
+            btnVerTodas.classList.remove("hidden");
+        } else {
+            btnVerTodas.href = "#";
+            btnVerTodas.classList.add("hidden");
+        }
+
+        // ------ Botão "Visualizar Atendimento" ------
+    // ------ Botão "Visualizar Atendimento" ------
     const btnVisualizar = document.getElementById("btnVisualizarAtendimento");
-    if (consultaAtendida && temPaciente) {
+
+    const podeVisualizar = ["atendido", "faltou"].includes(status) && temPaciente;
+
+    if (podeVisualizar) {
         btnVisualizar.classList.remove("hidden");
-        btnVisualizar.onclick = () => visualizarAtendimento(id, event.extendedProps.paciente_id);
+        btnVisualizar.onclick = () =>
+            visualizarAtendimento(id, event.extendedProps.paciente_id);
     } else {
         btnVisualizar.classList.add("hidden");
     }
+
 };
 
 // ------------------- VISUALIZAR AGENDAMENTO -------------------

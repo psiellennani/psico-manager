@@ -84,10 +84,13 @@ class SessaoController extends Controller
 
     // Só atualiza o status e adiciona parte da mensagem se tiver consulta vinculada
     if ($request->filled('consulta_id')) {
-        Consulta::where('id', $request->consulta_id)
-                ->update(['status' => 'atendido']);
+        $consulta = Consulta::find($request->consulta_id);
 
-        $mensagem .= ' Consulta marcada como atendida.';
+        // Só marca como atendida se NÃO for faltou
+        if ($consulta && $consulta->status !== 'faltou') {
+            $consulta->update(['status' => 'atendido']);
+            $mensagem .= ' Consulta marcada como atendida.';
+        }
     }
 
     // Redireciona para o prontuário. Se a ordem foi alterada para ASC,

@@ -80,7 +80,7 @@ class ConsultaController extends Controller
     {
         $data = $request->validate([
             'paciente_id' => ['required', 'exists:pacientes,id', Rule::exists('pacientes', 'id')->where('profissional_id', Auth::id())],
-            'titulo' => 'required|string|max:255',
+            'titulo' => 'nullable|string',
             'data_hora_inicio' => 'required|date',
             'data_hora_fim' => 'required|date|after:data_hora_inicio',
             'observacoes' => 'nullable|string',
@@ -188,7 +188,7 @@ class ConsultaController extends Controller
 // app/Http/Controllers/ConsultaController.php
 public function iniciarAtendimento(Consulta $consulta)
 {
-    if (!in_array($consulta->status, ['agendado', 'confirmado'])) {
+    if (!in_array($consulta->status, ['agendado', 'confirmado','faltou'])) {
         return back()->with('warning', 'Esta consulta não pode mais ser iniciada.');
     }
 
