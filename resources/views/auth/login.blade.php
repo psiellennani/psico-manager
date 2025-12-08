@@ -2,8 +2,8 @@
 <x-guest-layout>
     <style>
         :root {
-            --primary: rgba(36, 37, 141, 0.88);     /* Índigo / Violeta (Tailwind's indigo-500) */
-            --primary-dark: #4f46e5;/* Índigo mais Escuro */
+            --primary: rgba(6, 8, 90, 0.88);     /* Índigo / Violeta (Tailwind's indigo-500) */
+            --primary-dark: #9900ffff;/* Índigo mais Escuro */
             --danger: #ef4444;
             --gray-200: #e2e8f0;
             --gray-500: #64748b;
@@ -257,7 +257,6 @@
         <section class="welcome">
             <!-- <div class="logo-circle"></div> -->
             <p>
-                Realize suas consultas e evoluções<br>
                 Comece sua jornada com a <strong>Clínica Ellen Nani</strong>
             </p>
             <a href="{{ route('register') }}" class="btn-outline">CRIAR CONTA</a>
