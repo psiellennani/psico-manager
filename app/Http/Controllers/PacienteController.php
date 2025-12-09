@@ -27,6 +27,8 @@ class PacienteController extends Controller
         'contato_emergencia' => 'nullable|string|max:100',
         'estado_civil' => 'nullable|string|max:50',
         'profissao' => 'nullable|string|max:100',
+        'cep' => 'nullable|string|max:30',
+        'cidade' => 'nullable|string|max:150',
         'endereco' => 'nullable|string|max:150',
         'observacoes' => 'nullable|string'
     ]);
@@ -70,6 +72,8 @@ public function show(Paciente $paciente)
             'contato_emergencia' => 'nullable|string|max:100',
             'estado_civil' => 'nullable|string|max:50',
             'profissao' => 'nullable|string|max:100',
+            'cep' => 'nullable|string|max:150',
+            'cidade' => 'nullable|string|max:150',
             'endereco' => 'nullable|string|max:150',
             'observacoes' => 'nullable|string'
         ]);

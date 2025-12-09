@@ -50,10 +50,18 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <div>
+                        <label class="block font-medium text-gray-700 mb-1">CEP</label>
+                        <input type="text" name="cep" class="w-full border-gray-300 rounded-lg px-3 py-1.5">
+                    </div>
+
+                    <div>
+                        <label class="block font-medium text-gray-700 mb-1">Cidade</label>
+                        <input type="text" name="cidade" class="w-full border-gray-300 rounded-lg px-3 py-1.5">
+                    </div>
+                    <div>
                         <label class="block font-medium text-gray-700 mb-1">Endereço</label>
                         <input type="text" name="endereco" class="w-full border-gray-300 rounded-lg px-3 py-1.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition shadow-sm">
                     </div>
-
                     <div>
                         <label class="block font-medium text-gray-700 mb-1">Profissão</label>
                         <input type="text" name="profissao" class="w-full border-gray-300 rounded-lg px-3 py-1.5 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition shadow-sm">
@@ -154,6 +162,8 @@
                     form.contato_emergencia.value = paciente.contato_emergencia || '';
                     form.estado_civil.value = paciente.estado_civil || '';
                     form.profissao.value = paciente.profissao || '';
+                    form.cep.value = paciente.cep || '';
+                    form.cidade.value = paciente.cidade || '';
                     form.endereco.value = paciente.endereco || '';
                     form.observacoes.value = paciente.observacoes || '';
 
