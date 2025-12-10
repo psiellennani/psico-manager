@@ -11,7 +11,7 @@ class Paciente extends Model
 
     protected $fillable = [
         'profissional_id', 'nome', 'data_nascimento', 'telefone', 'email', 
-        'contato_emergencia', 'estado_civil', 'profissao', 'endereco', 'observacoes'
+        'contato_emergencia', 'estado_civil', 'profissao', 'cep', 'cidade', 'endereco', 'observacoes'
     ];
 
     public function profissional()
@@ -36,5 +36,10 @@ class Paciente extends Model
     {
         return $this->hasMany(Registro::class);
     }
+        public function anamneseInfantil()
+    {
+        return $this->hasOne(AnamneseInfantil::class);
+    }
+
 
 }

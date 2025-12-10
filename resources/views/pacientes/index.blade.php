@@ -6,7 +6,7 @@
     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <h1 class="text-3xl font-bold text-gray-800">Meus Pacientes</h1>
         <button onclick="openPacienteModal()"
-                class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2">
+            class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-6 py-3 rounded-lg shadow-md transition flex items-center gap-2">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
             </svg>
@@ -40,18 +40,50 @@
                         </td>
                         <td class="px-6 py-5 text-center text-sm">
                             <div class="flex items-center justify-center gap-3 flex-wrap">
+
                                 <button onclick="editPaciente({{ $paciente->id }})"
-                                        class="text-indigo-600 hover:text-indigo-800 font-medium transition">
+                                    class="text-indigo-600 hover:text-indigo-800 font-medium transition">
                                     Editar
                                 </button>
+
                                 <button onclick="deletePaciente({{ $paciente->id }}, '{{ addslashes($paciente->nome) }}')"
-                                        class="text-red-600 hover:text-red-800 font-medium transition">
+                                    class="text-red-600 hover:text-red-800 font-medium transition">
                                     Excluir
                                 </button>
+
                                 <a href="{{ route('prontuario.index', $paciente->id) }}"
-                                   class="text-green-600 hover:text-green-800 font-medium transition">
+                                    class="text-green-600 hover:text-green-800 font-medium transition">
                                     Sessões
                                 </a>
+
+                                <!-- 🔵 NOVO: Botão de Anamnese -->
+                                <div class="relative group inline-block">
+
+                                    <!-- Botão -->
+                                    <button
+                                        class="text-blue-600 hover:text-blue-800 font-medium transition">
+                                        Anamnese
+                                    </button>
+
+                                    <!-- Área clicável invisível (evita sumir ao passar o mouse) -->
+                                    <div class="absolute left-0 right-0 h-3"></div>
+
+                                    <!-- Dropdown -->
+                                    <div class="absolute left-1/2 -translate-x-1/2 mt-3
+                                                hidden group-hover:block
+                                                bg-white shadow-xl border rounded-lg w-44 z-50">
+
+                                        <a href="{{ route('anamnese-infantil.index', $paciente->id) }}"
+                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            Infantil
+                                        </a>
+
+                                        <!-- <a href="#"
+                                            class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            Adulta
+                                        </a> -->
+                                    </div>
+                                </div>
                             </div>
                         </td>
                     </tr>
@@ -61,7 +93,7 @@
                             <div class="flex flex-col items-center">
                                 <svg class="w-16 h-16 text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
-                                          d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
                                 </svg>
                                 <p class="text-lg">Nenhum paciente cadastrado ainda.</p>
                                 <button onclick="openPacienteModal()" class="mt-3 text-indigo-600 hover:underline">
@@ -107,19 +139,19 @@
         }).then(result => {
             if (result.isConfirmed) {
                 fetch(`/pacientes/${id}`, {
-                    method: 'DELETE',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json'
-                    }
-                })
-                .then(r => r.json())
-                .then(res => {
-                    if (res.success) {
-                        Swal.fire('Excluído!', res.message, 'success').then(() => location.reload());
-                    }
-                })
-                .catch(() => Swal.fire('Erro', 'Não foi possível excluir.', 'error'));
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json'
+                        }
+                    })
+                    .then(r => r.json())
+                    .then(res => {
+                        if (res.success) {
+                            Swal.fire('Excluído!', res.message, 'success').then(() => location.reload());
+                        }
+                    })
+                    .catch(() => Swal.fire('Erro', 'Não foi possível excluir.', 'error'));
             }
         });
     };
@@ -131,25 +163,27 @@
         if (pacienteId) formData.append('id', pacienteId);
 
         fetch('{{ route("pacientes.store") }}', {
-            method: 'POST',
-            body: formData,
-            headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
-        })
-        .then(r => r.json())
-        .then(res => {
-            if (res.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Pronto!',
-                    text: res.message,
-                    timer: 1500,
-                    showConfirmButton: false
-                }).then(() => location.reload());
-            }
-        })
-        .catch(() => {
-            Swal.fire('Erro', 'Verifique os dados e tente novamente.', 'error');
-        });
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(r => r.json())
+            .then(res => {
+                if (res.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pronto!',
+                        text: res.message,
+                        timer: 1500,
+                        showConfirmButton: false
+                    }).then(() => location.reload());
+                }
+            })
+            .catch(() => {
+                Swal.fire('Erro', 'Verifique os dados e tente novamente.', 'error');
+            });
     });
 </script>
 @endpush

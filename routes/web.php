@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AnamneseInfantilController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ConsultaController;
 use App\Http\Controllers\PacienteController;
@@ -21,7 +22,7 @@ Route::middleware([
 
     // Agenda de consultas
     Route::get('/agenda', [ConsultaController::class, 'index'])
-    ->name('agenda.index');
+        ->name('agenda.index');
     Route::get('/api/consultas', [ConsultaController::class, 'apiEvents'])->name('consultas.api');
     Route::post('/consultas', [ConsultaController::class, 'store'])->name('consultas.store');
     Route::put('/consultas/{id}', [ConsultaController::class, 'update'])->name('consultas.update');
@@ -39,15 +40,18 @@ Route::middleware([
         Route::get('{paciente}/sessoes', [SessaoController::class, 'index'])->name('prontuario.index');
         Route::post('{paciente}/sessoes', [SessaoController::class, 'store'])->name('sessoes.store');
 
-           // REGISTROS — AGORA COM SESSAO!
-    Route::prefix('{paciente}/sessoes/{sessao}/registros')->group(function () {
+        // REGISTROS — AGORA COM SESSAO!
+        Route::prefix('{paciente}/sessoes/{sessao}/registros')->group(function () {
 
-        Route::post('/', [RegistroController::class, 'store'])->name('registros.store');
-        Route::get('{registro}/edit', [RegistroController::class, 'edit'])->name('registros.edit');
-        Route::put('{registro}', [RegistroController::class, 'update'])->name('registros.update');
-        Route::delete('{registro}', [RegistroController::class, 'destroy'])->name('registros.destroy');
-
+            Route::post('/', [RegistroController::class, 'store'])->name('registros.store');
+            Route::get('{registro}/edit', [RegistroController::class, 'edit'])->name('registros.edit');
+            Route::put('{registro}', [RegistroController::class, 'update'])->name('registros.update');
+            Route::delete('{registro}', [RegistroController::class, 'destroy'])->name('registros.destroy');
+        });
+      
     });
+    Route::prefix('pacientes/{paciente}')->group(function () {
+        Route::resource('anamnese-infantil', AnamneseInfantilController::class);
     });
 
     // Sessões individuais (edit/update/delete)
@@ -68,5 +72,5 @@ Route::middleware([
         return redirect()->route('agenda.index');
     })->name('consultas.index');
     Route::get('/api/sessoes/buscar-por-consulta/{id}', [SessaoController::class, 'buscarPorConsulta']);
-
+    Route::resource('anamneses-infantis', App\Http\Controllers\AnamneseInfantilController::class);
 });
